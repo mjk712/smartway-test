@@ -9,6 +9,14 @@ import (
 	"smartway-test/internal/storage"
 )
 
+// GetTicketsHandler получает список всех билетов
+// @Summary Получение списка билетов
+// @Description Возвращает список всех доступных билетов
+// @Tags Билеты
+// @Produce json
+// @Success 200 {array} models.Ticket "Список билетов успешно получен"
+// @Failure 400 "Ошибка запроса или получения списка билетов"
+// @Router /tickets [get]
 func GetTicketsHandler(ctx context.Context, storage storage.Storage, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.GetTickets"

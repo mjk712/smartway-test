@@ -12,6 +12,17 @@ import (
 	"smartway-test/internal/storage"
 )
 
+// UpdateDocumentInfo обновляет информацию о документе
+// @Summary Обновление информации о документе
+// @Description Обновляет данные документа по id
+// @Tags Документы
+// @Accept json
+// @Produce json
+// @Param documentId path string true "ID документа"
+// @Param document body requests.DocumentUpdateRequest true "Данные для обновления документа"
+// @Success 200 {object} models.Document "Документ успешно обновлён"
+// @Failure 400 "Ошибка запроса или обновления документа"
+// @Router /document/{documentId} [put]
 func UpdateDocumentInfo(ctx context.Context, storage storage.Storage, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handler.UpdateDocumentInfo"

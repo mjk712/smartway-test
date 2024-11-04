@@ -10,6 +10,17 @@ import (
 	"time"
 )
 
+// GetPassengerReport получает отчет о пассажире за определенный период
+// @Summary Получение отчета о пассажире
+// @Description Возвращает отчет о пассажире по заданному `passengerId` и диапазону дат
+// @Tags Пассажиры
+// @Produce json
+// @Param passengerId path int true "ID пассажира"
+// @Param start_date query string true "Дата начала в формате YYYY-MM-DD"
+// @Param end_date query string true "Дата окончания в формате YYYY-MM-DD"
+// @Success 200 {array} response.FlightReport "Отчёт успешно получен"
+// @Failure 400 "Ошибка запроса или получения отчёта"
+// @Router /reports/passenger/{passengerId} [get]
 func GetPassengerReport(ctx context.Context, storage storage.Storage, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 

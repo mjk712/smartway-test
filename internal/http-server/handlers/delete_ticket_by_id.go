@@ -10,6 +10,16 @@ import (
 	"smartway-test/internal/storage"
 )
 
+// DeleteTicketHandler удаляет билет по id.
+//
+// @Summary Удаление билета
+// @Description Удаляет билет по id и связь билета с пассажиром.
+// @Tags Билеты
+// @Accept json
+// @Param ticketId path int true "Ticket ID"
+// @Success 200 "Билет успешно удалён"
+// @Failure 404 "Ошибка в запросе или при удалении билета"
+// @Router /ticket/{ticketId} [delete]
 func DeleteTicketHandler(ctx context.Context, storage storage.Storage, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.DeleteTicket"

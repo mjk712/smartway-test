@@ -10,6 +10,16 @@ import (
 	"smartway-test/internal/storage"
 )
 
+// DeletePassengerHandler удаляет пассажира по id.
+//
+// @Summary Удаление пассажира
+// @Description Удаляет пассажира по id.
+// @Tags Пассажиры
+// @Accept json
+// @Param passengerId path int true "Passenger ID"
+// @Success 200 "Пассажир успешно удалён"
+// @Failure 404 "Ошибка в запросе или при удалении пассажира"
+// @Router /passenger/{passengerId} [delete]
 func DeletePassengerHandler(ctx context.Context, storage storage.Storage, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.DeletePassengerHandler"

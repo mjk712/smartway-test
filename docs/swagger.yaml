@@ -1,0 +1,385 @@
+definitions:
+  models.Document:
+    properties:
+      documentId:
+        type: integer
+      documentNumber:
+        type: string
+      documentType:
+        type: string
+      passengerId:
+        type: integer
+    type: object
+  models.Passenger:
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      middleName:
+        type: string
+      passengerId:
+        type: integer
+    type: object
+  models.Ticket:
+    properties:
+      arrivalDate:
+        type: string
+      createdAt:
+        type: string
+      departureDate:
+        type: string
+      departurePoint:
+        type: string
+      destinationPoint:
+        type: string
+      orderNumber:
+        type: string
+      serviceProvider:
+        type: string
+      ticketId:
+        type: integer
+    type: object
+  requests.DocumentUpdateRequest:
+    properties:
+      documentNumber:
+        type: string
+      documentType:
+        type: string
+      passengerId:
+        type: integer
+    type: object
+  requests.TicketUpdateRequest:
+    properties:
+      arrivalDate:
+        type: string
+      createdAt:
+        type: string
+      departureDate:
+        type: string
+      departurePoint:
+        type: string
+      destinationPoint:
+        type: string
+      serviceProvider:
+        type: string
+    type: object
+  requests.UpdatePassengerRequest:
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      middleName:
+        type: string
+    type: object
+  response.FlightReport:
+    properties:
+      arrivalDate:
+        type: string
+      createdAt:
+        type: string
+      departureDate:
+        type: string
+      departurePoint:
+        type: string
+      destinationPoint:
+        type: string
+      flightStatus:
+        type: string
+      orderNumber:
+        type: string
+      serviceProvider:
+        type: string
+      ticketId:
+        type: integer
+    type: object
+  response.FullTicketInfo:
+    properties:
+      passengers:
+        items:
+          $ref: '#/definitions/response.PassengerWithDocs'
+        type: array
+      ticket:
+        $ref: '#/definitions/models.Ticket'
+    type: object
+  response.PassengerWithDocs:
+    properties:
+      documents:
+        items:
+          $ref: '#/definitions/models.Document'
+        type: array
+      firstName:
+        type: string
+      lastName:
+        type: string
+      middleName:
+        type: string
+      passengerId:
+        type: integer
+    type: object
+info:
+  contact: {}
+paths:
+  /document/{documentId}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет документ по id.
+      parameters:
+      - description: Document ID
+        in: path
+        name: documentId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: Документ успешно удалён
+        "404":
+          description: Ошибка в запросе или при удалении документа
+      summary: Удаление документа
+      tags:
+      - Документы
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные документа по id
+      parameters:
+      - description: ID документа
+        in: path
+        name: documentId
+        required: true
+        type: string
+      - description: Данные для обновления документа
+        in: body
+        name: document
+        required: true
+        schema:
+          $ref: '#/definitions/requests.DocumentUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Документ успешно обновлён
+          schema:
+            $ref: '#/definitions/models.Document'
+        "400":
+          description: Ошибка запроса или обновления документа
+      summary: Обновление информации о документе
+      tags:
+      - Документы
+  /documents/{passengerId}:
+    get:
+      description: Возвращает список документов. Требует id пассажира.
+      parameters:
+      - description: Passenger ID
+        in: path
+        name: passengerId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список продуктов успешно получен
+          schema:
+            items:
+              $ref: '#/definitions/models.Document'
+            type: array
+        "404":
+          description: Ошибка в запросе или при получении списка документов
+      summary: Получение списка документов
+      tags:
+      - Документы
+  /passenger/{passengerId}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет пассажира по id.
+      parameters:
+      - description: Passenger ID
+        in: path
+        name: passengerId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: Пассажир успешно удалён
+        "404":
+          description: Ошибка в запросе или при удалении пассажира
+      summary: Удаление пассажира
+      tags:
+      - Пассажиры
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные пассажира по заданному id
+      parameters:
+      - description: ID пассажира
+        in: path
+        name: passengerId
+        required: true
+        type: string
+      - description: Данные для обновления информации о пассажире
+        in: body
+        name: passenger
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdatePassengerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Пассажир успешно обновлён
+          schema:
+            $ref: '#/definitions/models.Passenger'
+        "400":
+          description: Ошибка запроса или обновления пассажира
+      summary: Обновление информации о пассажире
+      tags:
+      - Пассажиры
+  /passengers/{ticketNumber}:
+    get:
+      description: Возвращает список пассажиров по номеру билета
+      parameters:
+      - description: Номер билета
+        in: path
+        name: ticketNumber
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список пассажиров успешно получен
+          schema:
+            items:
+              $ref: '#/definitions/models.Passenger'
+            type: array
+        "400":
+          description: Ошибка запроса или получения списка пассажиров
+      summary: Получение списка пассажиров по номеру билета
+      tags:
+      - Пассажиры
+  /reports/passenger/{passengerId}:
+    get:
+      description: Возвращает отчет о пассажире по заданному `passengerId` и диапазону
+        дат
+      parameters:
+      - description: ID пассажира
+        in: path
+        name: passengerId
+        required: true
+        type: integer
+      - description: Дата начала в формате YYYY-MM-DD
+        in: query
+        name: start_date
+        required: true
+        type: string
+      - description: Дата окончания в формате YYYY-MM-DD
+        in: query
+        name: end_date
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Отчёт успешно получен
+          schema:
+            items:
+              $ref: '#/definitions/response.FlightReport'
+            type: array
+        "400":
+          description: Ошибка запроса или получения отчёта
+      summary: Получение отчета о пассажире
+      tags:
+      - Пассажиры
+  /ticket/{ticketId}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет билет по id и связь билета с пассажиром.
+      parameters:
+      - description: Ticket ID
+        in: path
+        name: ticketId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: Билет успешно удалён
+        "404":
+          description: Ошибка в запросе или при удалении билета
+      summary: Удаление билета
+      tags:
+      - Билеты
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные билета по заданному `ticketId`
+      parameters:
+      - description: ID билета
+        in: path
+        name: ticketId
+        required: true
+        type: string
+      - description: Данные для обновления информации о билете
+        in: body
+        name: ticket
+        required: true
+        schema:
+          $ref: '#/definitions/requests.TicketUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Билет успешно обновлён
+          schema:
+            $ref: '#/definitions/models.Ticket'
+        "400":
+          description: Ошибка запроса или обновления билета
+      summary: Обновление информации о билете
+      tags:
+      - Билеты
+  /ticket/{ticketNumber}:
+    get:
+      description: Возвращает полные данные о билете по заданному номеру
+      parameters:
+      - description: Номер билета
+        in: path
+        name: ticketNumber
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Информация о билете успешно получена
+          schema:
+            items:
+              $ref: '#/definitions/response.FullTicketInfo'
+            type: array
+        "400":
+          description: Ошибка запроса или получения полной информации о билете
+      summary: Получение полной информации о билете
+      tags:
+      - Билеты
+  /tickets:
+    get:
+      description: Возвращает список всех доступных билетов
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список билетов успешно получен
+          schema:
+            items:
+              $ref: '#/definitions/models.Ticket'
+            type: array
+        "400":
+          description: Ошибка запроса или получения списка билетов
+      summary: Получение списка билетов
+      tags:
+      - Билеты
+swagger: "2.0"

@@ -9,6 +9,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 	"smartway-test/internal/http-server/requests"
+	"smartway-test/internal/http-server/response"
 	"smartway-test/internal/models"
 	"smartway-test/internal/storage/query"
 	"strconv"
@@ -19,8 +20,8 @@ type Storage interface {
 	GetTickets(ctx context.Context) ([]*models.Ticket, error)
 	GetPassengersByTicketNumber(ctx context.Context, ticketNumber string) ([]*models.Passenger, error)
 	GetDocumentsByPassengerId(ctx context.Context, passengerId string) ([]*models.Document, error)
-	GetFullTicketInfo(ctx context.Context, ticketNumber string) (interface{}, error)
-	GetPassengerReport(ctx context.Context, passengerId string, startDate time.Time, endDate time.Time) (interface{}, error)
+	GetFullTicketInfo(ctx context.Context, ticketNumber string) ([]*response.FullTicketInfo, error)
+	GetPassengerReport(ctx context.Context, passengerId string, startDate time.Time, endDate time.Time) ([]*response.FlightReport, error)
 	UpdateTicketInfo(ctx context.Context, ticketId string, updateData requests.TicketUpdateRequest) (*models.Ticket, error)
 	UpdatePassengerInfo(ctx context.Context, passengerId string, updateData requests.UpdatePassengerRequest) (*models.Passenger, error)
 	UpdateDocumentInfo(ctx context.Context, documentId string, updateData requests.DocumentUpdateRequest) (*models.Document, error)
@@ -110,7 +111,7 @@ func (s *StorageRepo) GetDocumentsByPassengerId(ctx context.Context, passengerId
 	return documents, nil
 }
 
-func (s *StorageRepo) GetFullTicketInfo(ctx context.Context, ticketNumber string) (interface{}, error) {
+func (s *StorageRepo) GetFullTicketInfo(ctx context.Context, ticketNumber string) ([]*response.FullTicketInfo, error) {
 	const op = "storage.postgresql.GetFullTicketInfo"
 
 	type combinedRow struct {
@@ -119,41 +120,31 @@ func (s *StorageRepo) GetFullTicketInfo(ctx context.Context, ticketNumber string
 		models.Document
 	}
 
-	type passengerWithDocs struct {
-		models.Passenger
-		Documents []models.Document
-	}
-
-	type fullTicketInfo struct {
-		Ticket     models.Ticket
-		Passengers []passengerWithDocs
-	}
-
 	var combinedRows []combinedRow
 
 	if err := s.db.SelectContext(ctx, &combinedRows, query.GetTicketFullInfo, ticketNumber); err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	ticketMap := make(map[int]*fullTicketInfo)
-	passengerMap := make(map[int]map[int]*passengerWithDocs)
+	ticketMap := make(map[int]*response.FullTicketInfo)
+	passengerMap := make(map[int]map[int]*response.PassengerWithDocs)
 
 	for _, row := range combinedRows {
 		ticketInfo, exists := ticketMap[row.TicketId]
 		if !exists {
 			//если билет новый, добавляем в мапу
-			ticketMap[row.TicketId] = &fullTicketInfo{
+			ticketMap[row.TicketId] = &response.FullTicketInfo{
 				Ticket:     row.Ticket,
-				Passengers: []passengerWithDocs{},
+				Passengers: []response.PassengerWithDocs{},
 			}
 			ticketInfo = ticketMap[row.TicketId]
-			passengerMap[row.TicketId] = make(map[int]*passengerWithDocs)
+			passengerMap[row.TicketId] = make(map[int]*response.PassengerWithDocs)
 		}
 		//проверяем наличие пассажира
 		passengerInfo, passengerExists := passengerMap[row.TicketId][row.Passenger.PassengerId]
 		if !passengerExists {
 			//добавляем пассажира
-			passengerMap[row.TicketId][row.Passenger.PassengerId] = &passengerWithDocs{
+			passengerMap[row.TicketId][row.Passenger.PassengerId] = &response.PassengerWithDocs{
 				Passenger: row.Passenger,
 				Documents: []models.Document{},
 			}
@@ -174,9 +165,9 @@ func (s *StorageRepo) GetFullTicketInfo(ctx context.Context, ticketNumber string
 
 	}
 
-	var result []fullTicketInfo
+	var result []*response.FullTicketInfo
 	for _, info := range ticketMap {
-		result = append(result, *info)
+		result = append(result, info)
 	}
 
 	return result, nil
@@ -366,15 +357,10 @@ func (s *StorageRepo) DeleteDocumentById(ctx context.Context, documentId string)
 	return nil
 }
 
-func (s *StorageRepo) GetPassengerReport(ctx context.Context, passengerId string, startDate time.Time, endDate time.Time) (interface{}, error) {
+func (s *StorageRepo) GetPassengerReport(ctx context.Context, passengerId string, startDate time.Time, endDate time.Time) ([]*response.FlightReport, error) {
 	const op = "storage.postgres.GetPassengerReport"
 
-	type flightReport struct {
-		models.Ticket
-		FlightStatus string `db:"flight_status" json:"flightStatus"`
-	}
-
-	var report []flightReport
+	var report []*response.FlightReport
 	err := s.db.SelectContext(ctx, &report, query.GetPassengerReport, startDate, endDate, passengerId)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)

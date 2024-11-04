@@ -12,6 +12,17 @@ import (
 	"smartway-test/internal/storage"
 )
 
+// UpdateTicketInfo обновляет информацию о билете
+// @Summary Обновление информации о билете
+// @Description Обновляет данные билета по заданному `ticketId`
+// @Tags Билеты
+// @Accept json
+// @Produce json
+// @Param ticketId path string true "ID билета"
+// @Param ticket body requests.TicketUpdateRequest true "Данные для обновления информации о билете"
+// @Success 200 {object} models.Ticket "Билет успешно обновлён"
+// @Failure 400 "Ошибка запроса или обновления билета"
+// @Router /ticket/{ticketId} [put]
 func UpdateTicketInfo(ctx context.Context, storage storage.Storage, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handler.UpdateTicketInfo"

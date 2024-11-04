@@ -10,6 +10,16 @@ import (
 	"smartway-test/internal/storage"
 )
 
+// GetDocumentsByPassengerId Возвращает список документов по id пассажира.
+//
+// @Summary Получение списка документов
+// @Description Возвращает список документов. Требует id пассажира.
+// @Tags Документы
+// @Produce json
+// @Param passengerId path int true "Passenger ID"
+// @Success 200 {array} models.Document "Список продуктов успешно получен"
+// @Failure 404 "Ошибка в запросе или при получении списка документов"
+// @Router /documents/{passengerId} [get]
 func GetDocumentsByPassengerId(ctx context.Context, storage storage.Storage, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.GetDocumentsByPassengerId"

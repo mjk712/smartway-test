@@ -10,6 +10,15 @@ import (
 	"smartway-test/internal/storage"
 )
 
+// GetTicketFullInfo получает полную информацию о билете
+// @Summary Получение полной информации о билете
+// @Description Возвращает полные данные о билете по заданному номеру
+// @Tags Билеты
+// @Produce json
+// @Param ticketNumber path string true "Номер билета"
+// @Success 200 {array} response.FullTicketInfo "Информация о билете успешно получена"
+// @Failure 400 "Ошибка запроса или получения полной информации о билете"
+// @Router /ticket/{ticketNumber} [get]
 func GetTicketFullInfo(ctx context.Context, storage storage.Storage, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.GetTicketFullInfo"

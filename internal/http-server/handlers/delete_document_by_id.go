@@ -10,6 +10,16 @@ import (
 	"smartway-test/internal/storage"
 )
 
+// DeleteDocumentHandler удаляет документ по id.
+//
+// @Summary Удаление документа
+// @Description Удаляет документ по id.
+// @Tags Документы
+// @Accept json
+// @Param documentId path int true "Document ID"
+// @Success 200 "Документ успешно удалён"
+// @Failure 404 "Ошибка в запросе или при удалении документа"
+// @Router /document/{documentId} [delete]
 func DeleteDocumentHandler(ctx context.Context, storage storage.Storage, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.DeleteDocumentHandler"

@@ -4,9 +4,11 @@ import (
 	"context"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"log/slog"
 	"net"
 	"net/http"
+	_ "smartway-test/docs"
 	"smartway-test/internal/config"
 	"smartway-test/internal/http-server/handlers"
 	"smartway-test/internal/storage"
@@ -35,6 +37,9 @@ func NewServer(ctx context.Context, log *slog.Logger, cfg *config.Config, repo s
 		r.Delete("/passenger/{passengerId}", handlers.DeletePassengerHandler(ctx, repo, log))
 		r.Delete("/document/{documentId}", handlers.DeleteDocumentHandler(ctx, repo, log))
 
+		r.Get("/swagger/*", httpSwagger.Handler(
+			httpSwagger.URL("/api/swagger/doc.json"),
+		))
 	})
 
 	return &http.Server{
