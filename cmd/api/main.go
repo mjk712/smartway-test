@@ -2,14 +2,12 @@ package main
 
 import (
 	"context"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
-	"net/http"
 	"os"
 	"os/signal"
 	"smartway-test/internal/config"
-	"smartway-test/internal/storage/postgresql"
+	http_server "smartway-test/internal/http-server"
+	"smartway-test/internal/storage"
 	"syscall"
 	"time"
 )
@@ -31,25 +29,18 @@ func main() {
 		slog.String("version", "1"),
 	)
 	log.Debug("debug messages are enabled")
+	//ctx
+	mainCtx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	//storage
-	storage, err := postgresql.New(cfg.ConnectionString)
+	repo, err := storage.New(cfg.ConnectionString)
 	if err != nil {
 		log.Error("failed to init storage", err)
 		os.Exit(1)
 	}
-	_ = storage
-	//router
-	router := chi.NewRouter()
 
-	router.Use(middleware.RequestID)
-	router.Use(middleware.Logger)
-	router.Use(middleware.Recoverer)
-	router.Use(middleware.URLFormat)
-	router.Use(middleware.Timeout(60 * time.Second))
-
-	router.Route("/api", func(r chi.Router) {
-		//r.Get("/tickets")
-	})
+	//server
+	serv := http_server.NewServer(mainCtx, log, cfg, repo)
 
 	log.Info("starting server", slog.String("address", cfg.Address))
 
@@ -58,13 +49,8 @@ func main() {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-	srv := &http.Server{
-		Addr:    cfg.Address,
-		Handler: router,
-	}
-
 	go func() {
-		if err := srv.ListenAndServe(); err != nil {
+		if err := serv.ListenAndServe(); err != nil {
 			log.Error("failed to start server", err)
 		}
 	}()
@@ -76,7 +62,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := srv.Shutdown(ctx); err != nil {
+	if err := serv.Shutdown(ctx); err != nil {
 		log.Error("failed to shutdown server", err)
 
 		os.Exit(1)

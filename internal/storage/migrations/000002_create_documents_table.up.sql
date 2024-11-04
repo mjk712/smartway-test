@@ -1,9 +1,7 @@
 CREATE TABLE IF NOT EXISTS document (
-                                         id BIGSERIAL PRIMARY KEY,
-                                         passenger_id INTEGER NOT NULL ,
-                                         last_name VARCHAR(50) NOT NULL,
-                                         middle_name VARCHAR(50) NOT NULL,
-                                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                                         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                                         FOREIGN KEY (passenger_id) REFERENCES passenger(id)
+                                        document_id BIGSERIAL PRIMARY KEY,
+                                        passenger_id INTEGER NOT NULL ,
+                                        document_type VARCHAR(50) NOT NULL,
+                                        document_number VARCHAR(50) NOT NULL,
+                                        FOREIGN KEY (passenger_id) REFERENCES passenger(passenger_id)
 );
