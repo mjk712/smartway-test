@@ -1,0 +1,1 @@
+DELETE FROM flight_ticket WHERE ticket_id = $1;

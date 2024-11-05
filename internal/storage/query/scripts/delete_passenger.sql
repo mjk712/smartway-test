@@ -1,0 +1,1 @@
+DELETE FROM passenger WHERE passenger_id = $1;

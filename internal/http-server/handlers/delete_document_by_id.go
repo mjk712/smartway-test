@@ -7,7 +7,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
 	"net/http"
-	"smartway-test/internal/storage"
+	"smartway-test/internal/service"
 )
 
 // DeleteDocumentHandler удаляет документ по id.
@@ -20,7 +20,7 @@ import (
 // @Success 200 "Документ успешно удалён"
 // @Failure 404 "Ошибка в запросе или при удалении документа"
 // @Router /document/{documentId} [delete]
-func DeleteDocumentHandler(ctx context.Context, storage storage.Storage, log *slog.Logger) http.HandlerFunc {
+func DeleteDocumentHandler(ctx context.Context, flightService service.FlightService, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.DeleteDocumentHandler"
 
@@ -31,7 +31,7 @@ func DeleteDocumentHandler(ctx context.Context, storage storage.Storage, log *sl
 		)
 
 		documentId := chi.URLParam(r, "documentId")
-		err := storage.DeleteDocumentById(ctx, documentId)
+		err := flightService.DeleteDocumentById(ctx, documentId)
 		if err != nil {
 			log.Error("Error delete document with id: ", documentId, err)
 			w.WriteHeader(http.StatusBadRequest)

@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"smartway-test/internal/config"
 	http_server "smartway-test/internal/http-server"
+	"smartway-test/internal/service"
 	"smartway-test/internal/storage"
 	"syscall"
 	"time"
@@ -38,9 +39,11 @@ func main() {
 		log.Error("failed to init storage", err)
 		os.Exit(1)
 	}
+	//services
+	flightService := service.NewFlightService(repo)
 
 	//server
-	serv := http_server.NewServer(mainCtx, log, cfg, repo)
+	serv := http_server.NewServer(mainCtx, log, cfg, flightService)
 
 	log.Info("starting server", slog.String("address", cfg.Address))
 

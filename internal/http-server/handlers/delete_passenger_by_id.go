@@ -7,7 +7,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
 	"net/http"
-	"smartway-test/internal/storage"
+	"smartway-test/internal/service"
 )
 
 // DeletePassengerHandler удаляет пассажира по id.
@@ -20,7 +20,7 @@ import (
 // @Success 200 "Пассажир успешно удалён"
 // @Failure 404 "Ошибка в запросе или при удалении пассажира"
 // @Router /passenger/{passengerId} [delete]
-func DeletePassengerHandler(ctx context.Context, storage storage.Storage, log *slog.Logger) http.HandlerFunc {
+func DeletePassengerHandler(ctx context.Context, flightService service.FlightService, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.DeletePassengerHandler"
 
@@ -31,7 +31,7 @@ func DeletePassengerHandler(ctx context.Context, storage storage.Storage, log *s
 		)
 
 		passengerId := chi.URLParam(r, "passengerId")
-		err := storage.DeletePassengerById(ctx, passengerId)
+		err := flightService.DeletePassengerById(ctx, passengerId)
 		if err != nil {
 			log.Error("Error delete ticket with id: ", passengerId, err)
 			w.WriteHeader(http.StatusBadRequest)

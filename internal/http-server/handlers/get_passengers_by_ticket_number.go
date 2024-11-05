@@ -7,7 +7,7 @@ import (
 	"github.com/go-chi/render"
 	"log/slog"
 	"net/http"
-	"smartway-test/internal/storage"
+	"smartway-test/internal/service"
 )
 
 // GetPassengersByTicketNumberHandler получает список пассажиров по номеру билета
@@ -19,7 +19,7 @@ import (
 // @Success 200 {array} models.Passenger "Список пассажиров успешно получен"
 // @Failure 400 "Ошибка запроса или получения списка пассажиров"
 // @Router /passengers/{ticketNumber} [get]
-func GetPassengersByTicketNumberHandler(ctx context.Context, storage storage.Storage, log *slog.Logger) http.HandlerFunc {
+func GetPassengersByTicketNumberHandler(ctx context.Context, flightService service.FlightService, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.GetPassengersByTicketNumber"
 
@@ -29,7 +29,7 @@ func GetPassengersByTicketNumberHandler(ctx context.Context, storage storage.Sto
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 		ticketNumber := chi.URLParam(r, "ticketNumber")
-		passengers, err := storage.GetPassengersByTicketNumber(ctx, ticketNumber)
+		passengers, err := flightService.GetPassengersByTicketNumber(ctx, ticketNumber)
 		if err != nil {
 			log.Error("Error get passengers by ticket number: ", err)
 			w.WriteHeader(http.StatusBadRequest)

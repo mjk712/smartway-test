@@ -11,11 +11,11 @@ import (
 	_ "smartway-test/docs"
 	"smartway-test/internal/config"
 	"smartway-test/internal/http-server/handlers"
-	"smartway-test/internal/storage"
+	"smartway-test/internal/service"
 	"time"
 )
 
-func NewServer(ctx context.Context, log *slog.Logger, cfg *config.Config, repo storage.Storage) *http.Server {
+func NewServer(ctx context.Context, log *slog.Logger, cfg *config.Config, flightService service.FlightService) *http.Server {
 	router := chi.NewRouter()
 
 	router.Use(middleware.RequestID)
@@ -25,17 +25,17 @@ func NewServer(ctx context.Context, log *slog.Logger, cfg *config.Config, repo s
 	router.Use(middleware.Timeout(60 * time.Second))
 
 	router.Route("/api", func(r chi.Router) {
-		r.Get("/tickets", handlers.GetTicketsHandler(ctx, repo, log))
-		r.Get("/passengers/{ticketNumber}", handlers.GetPassengersByTicketNumberHandler(ctx, repo, log))
-		r.Get("/documents/{passengerId}", handlers.GetDocumentsByPassengerId(ctx, repo, log))
-		r.Get("/ticket/{ticketNumber}", handlers.GetTicketFullInfo(ctx, repo, log))
-		r.Get("/reports/passenger/{passengerId}", handlers.GetPassengerReport(ctx, repo, log))
-		r.Put("/ticket/{ticketId}", handlers.UpdateTicketInfo(ctx, repo, log))
-		r.Put("/passenger/{passengerId}", handlers.UpdatePassengerInfo(ctx, repo, log))
-		r.Put("/document/{documentId}", handlers.UpdateDocumentInfo(ctx, repo, log))
-		r.Delete("/ticket/{ticketId}", handlers.DeleteTicketHandler(ctx, repo, log))
-		r.Delete("/passenger/{passengerId}", handlers.DeletePassengerHandler(ctx, repo, log))
-		r.Delete("/document/{documentId}", handlers.DeleteDocumentHandler(ctx, repo, log))
+		r.Get("/tickets", handlers.GetTicketsHandler(ctx, flightService, log))
+		r.Get("/passengers/{ticketNumber}", handlers.GetPassengersByTicketNumberHandler(ctx, flightService, log))
+		r.Get("/documents/{passengerId}", handlers.GetDocumentsByPassengerId(ctx, flightService, log))
+		r.Get("/ticket/{ticketNumber}", handlers.GetTicketFullInfo(ctx, flightService, log))
+		r.Get("/reports/passenger/{passengerId}", handlers.GetPassengerReport(ctx, flightService, log))
+		r.Put("/ticket/{ticketId}", handlers.UpdateTicketInfo(ctx, flightService, log))
+		r.Put("/passenger/{passengerId}", handlers.UpdatePassengerInfo(ctx, flightService, log))
+		r.Put("/document/{documentId}", handlers.UpdateDocumentInfo(ctx, flightService, log))
+		r.Delete("/ticket/{ticketId}", handlers.DeleteTicketHandler(ctx, flightService, log))
+		r.Delete("/passenger/{passengerId}", handlers.DeletePassengerHandler(ctx, flightService, log))
+		r.Delete("/document/{documentId}", handlers.DeleteDocumentHandler(ctx, flightService, log))
 
 		r.Get("/swagger/*", httpSwagger.Handler(
 			httpSwagger.URL("/api/swagger/doc.json"),

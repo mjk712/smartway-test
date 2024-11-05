@@ -9,7 +9,7 @@ import (
 	"log/slog"
 	"net/http"
 	"smartway-test/internal/http-server/requests"
-	"smartway-test/internal/storage"
+	"smartway-test/internal/service"
 )
 
 // UpdateDocumentInfo обновляет информацию о документе
@@ -23,7 +23,7 @@ import (
 // @Success 200 {object} models.Document "Документ успешно обновлён"
 // @Failure 400 "Ошибка запроса или обновления документа"
 // @Router /document/{documentId} [put]
-func UpdateDocumentInfo(ctx context.Context, storage storage.Storage, log *slog.Logger) http.HandlerFunc {
+func UpdateDocumentInfo(ctx context.Context, flightService service.FlightService, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handler.UpdateDocumentInfo"
 
@@ -43,7 +43,7 @@ func UpdateDocumentInfo(ctx context.Context, storage storage.Storage, log *slog.
 			return
 		}
 
-		updatedDocument, err := storage.UpdateDocumentInfo(ctx, documentId, req)
+		updatedDocument, err := flightService.UpdateDocumentInfo(ctx, documentId, req)
 		if err != nil {
 			log.Error("Error updating ticket", err)
 			w.WriteHeader(http.StatusBadRequest)

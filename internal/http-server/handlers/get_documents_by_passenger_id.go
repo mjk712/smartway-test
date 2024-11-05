@@ -7,7 +7,7 @@ import (
 	"github.com/go-chi/render"
 	"log/slog"
 	"net/http"
-	"smartway-test/internal/storage"
+	"smartway-test/internal/service"
 )
 
 // GetDocumentsByPassengerId Возвращает список документов по id пассажира.
@@ -20,7 +20,7 @@ import (
 // @Success 200 {array} models.Document "Список продуктов успешно получен"
 // @Failure 404 "Ошибка в запросе или при получении списка документов"
 // @Router /documents/{passengerId} [get]
-func GetDocumentsByPassengerId(ctx context.Context, storage storage.Storage, log *slog.Logger) http.HandlerFunc {
+func GetDocumentsByPassengerId(ctx context.Context, flightService service.FlightService, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.GetDocumentsByPassengerId"
 
@@ -30,7 +30,7 @@ func GetDocumentsByPassengerId(ctx context.Context, storage storage.Storage, log
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 		passengerId := chi.URLParam(r, "passengerId")
-		documents, err := storage.GetDocumentsByPassengerId(ctx, passengerId)
+		documents, err := flightService.GetDocumentsByPassengerId(ctx, passengerId)
 		if err != nil {
 			log.Error("Error get documents by passenger id: ", err)
 			w.WriteHeader(http.StatusBadRequest)

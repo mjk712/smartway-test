@@ -6,7 +6,7 @@ import (
 	"github.com/go-chi/render"
 	"log/slog"
 	"net/http"
-	"smartway-test/internal/storage"
+	"smartway-test/internal/service"
 	"time"
 )
 
@@ -21,7 +21,7 @@ import (
 // @Success 200 {array} response.FlightReport "Отчёт успешно получен"
 // @Failure 400 "Ошибка запроса или получения отчёта"
 // @Router /reports/passenger/{passengerId} [get]
-func GetPassengerReport(ctx context.Context, storage storage.Storage, log *slog.Logger) http.HandlerFunc {
+func GetPassengerReport(ctx context.Context, flightService service.FlightService, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		passengerId := chi.URLParam(r, "passengerId")
@@ -42,7 +42,7 @@ func GetPassengerReport(ctx context.Context, storage storage.Storage, log *slog.
 			return
 		}
 
-		report, err := storage.GetPassengerReport(ctx, passengerId, startDate, endDate)
+		report, err := flightService.GetPassengerReport(ctx, passengerId, startDate, endDate)
 		if err != nil {
 			log.Error("Error getting report", err)
 			w.WriteHeader(http.StatusBadRequest)

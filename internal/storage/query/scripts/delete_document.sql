@@ -1,0 +1,1 @@
+DELETE FROM document WHERE document_id = $1;

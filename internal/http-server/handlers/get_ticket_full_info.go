@@ -7,7 +7,7 @@ import (
 	"github.com/go-chi/render"
 	"log/slog"
 	"net/http"
-	"smartway-test/internal/storage"
+	"smartway-test/internal/service"
 )
 
 // GetTicketFullInfo получает полную информацию о билете
@@ -19,7 +19,7 @@ import (
 // @Success 200 {object} response.FullTicketInfo "Информация о билете успешно получена"
 // @Failure 400 "Ошибка запроса или получения полной информации о билете"
 // @Router /ticket/{ticketNumber} [get]
-func GetTicketFullInfo(ctx context.Context, storage storage.Storage, log *slog.Logger) http.HandlerFunc {
+func GetTicketFullInfo(ctx context.Context, flightService service.FlightService, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.GetTicketFullInfo"
 
@@ -29,7 +29,7 @@ func GetTicketFullInfo(ctx context.Context, storage storage.Storage, log *slog.L
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 		ticketNumber := chi.URLParam(r, "ticketNumber")
-		ticket, err := storage.GetFullTicketInfo(ctx, ticketNumber)
+		ticket, err := flightService.GetFullTicketInfo(ctx, ticketNumber)
 		if err != nil {
 			log.Error("Error get passengers by ticket number: ", err)
 			w.WriteHeader(http.StatusBadRequest)

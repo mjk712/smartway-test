@@ -9,7 +9,7 @@ import (
 	"log/slog"
 	"net/http"
 	"smartway-test/internal/http-server/requests"
-	"smartway-test/internal/storage"
+	"smartway-test/internal/service"
 )
 
 // UpdateTicketInfo обновляет информацию о билете
@@ -23,7 +23,7 @@ import (
 // @Success 200 {object} models.Ticket "Билет успешно обновлён"
 // @Failure 400 "Ошибка запроса или обновления билета"
 // @Router /ticket/{ticketId} [put]
-func UpdateTicketInfo(ctx context.Context, storage storage.Storage, log *slog.Logger) http.HandlerFunc {
+func UpdateTicketInfo(ctx context.Context, flightService service.FlightService, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handler.UpdateTicketInfo"
 
@@ -43,7 +43,7 @@ func UpdateTicketInfo(ctx context.Context, storage storage.Storage, log *slog.Lo
 			return
 		}
 
-		updatedTicket, err := storage.UpdateTicketInfo(ctx, ticketId, req)
+		updatedTicket, err := flightService.UpdateTicketInfo(ctx, ticketId, req)
 		if err != nil {
 			log.Error("Error updating ticket", err)
 			w.WriteHeader(http.StatusBadRequest)

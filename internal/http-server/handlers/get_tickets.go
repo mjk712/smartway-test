@@ -6,7 +6,7 @@ import (
 	"github.com/go-chi/render"
 	"log/slog"
 	"net/http"
-	"smartway-test/internal/storage"
+	"smartway-test/internal/service"
 )
 
 // GetTicketsHandler получает список всех билетов
@@ -17,7 +17,7 @@ import (
 // @Success 200 {array} models.Ticket "Список билетов успешно получен"
 // @Failure 400 "Ошибка запроса или получения списка билетов"
 // @Router /tickets [get]
-func GetTicketsHandler(ctx context.Context, storage storage.Storage, log *slog.Logger) http.HandlerFunc {
+func GetTicketsHandler(ctx context.Context, flightService service.FlightService, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.GetTickets"
 
@@ -27,7 +27,7 @@ func GetTicketsHandler(ctx context.Context, storage storage.Storage, log *slog.L
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
-		tickets, err := storage.GetTickets(ctx)
+		tickets, err := flightService.GetTickets(ctx)
 		if err != nil {
 			log.Error("Error get tickets: ", err)
 			w.WriteHeader(http.StatusBadRequest)
