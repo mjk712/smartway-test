@@ -8,6 +8,7 @@ type Ticket struct {
 	ServiceProvider  string `json:"serviceProvider" db:"service_provider"`
 	DepartureDate    string `json:"departureDate" db:"departure_date"`
 	ArrivalDate      string `json:"arrivalDate" db:"arrival_date"`
+	PassengerId      int    `json:"passengerId,omitempty" db:"ticket.passenger_id" `
 	CreatedAt        string `json:"createdAt" db:"created_at"`
 }
 

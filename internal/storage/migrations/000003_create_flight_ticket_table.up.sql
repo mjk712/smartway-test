@@ -1,4 +1,3 @@
-
 CREATE TABLE IF NOT EXISTS flight_ticket (
                                              ticket_id BIGSERIAL PRIMARY KEY,
                                              departure_point VARCHAR(50) NOT NULL,
@@ -7,6 +6,8 @@ CREATE TABLE IF NOT EXISTS flight_ticket (
                                              service_provider VARCHAR(50) NOT NULL,
                                              departure_date TIMESTAMP NOT NULL,
                                              arrival_date TIMESTAMP NOT NULL,
-                                             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                                             passenger_id INTEGER NOT NULL ,
+                                             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                             FOREIGN KEY (passenger_id) REFERENCES passenger(passenger_id)
 
 );

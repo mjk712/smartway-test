@@ -6,6 +6,7 @@ type TicketUpdateRequest struct {
 	ServiceProvider  *string `json:"serviceProvider" `
 	DepartureDate    *string `json:"departureDate" `
 	ArrivalDate      *string `json:"arrivalDate" `
+	PassengerId      *int    `json:"passengerId" `
 	CreatedAt        *string `json:"createdAt" `
 }
 

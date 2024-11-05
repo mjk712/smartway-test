@@ -20,7 +20,7 @@ type Storage interface {
 	GetTickets(ctx context.Context) ([]*models.Ticket, error)
 	GetPassengersByTicketNumber(ctx context.Context, ticketNumber string) ([]*models.Passenger, error)
 	GetDocumentsByPassengerId(ctx context.Context, passengerId string) ([]*models.Document, error)
-	GetFullTicketInfo(ctx context.Context, ticketNumber string) ([]*response.FullTicketInfo, error)
+	GetFullTicketInfo(ctx context.Context, ticketNumber string) (response.FullTicketInfo, error)
 	GetPassengerReport(ctx context.Context, passengerId string, startDate time.Time, endDate time.Time) ([]*response.FlightReport, error)
 	UpdateTicketInfo(ctx context.Context, ticketId string, updateData requests.TicketUpdateRequest) (*models.Ticket, error)
 	UpdatePassengerInfo(ctx context.Context, passengerId string, updateData requests.UpdatePassengerRequest) (*models.Passenger, error)
@@ -111,7 +111,7 @@ func (s *StorageRepo) GetDocumentsByPassengerId(ctx context.Context, passengerId
 	return documents, nil
 }
 
-func (s *StorageRepo) GetFullTicketInfo(ctx context.Context, ticketNumber string) ([]*response.FullTicketInfo, error) {
+func (s *StorageRepo) GetFullTicketInfo(ctx context.Context, ticketNumber string) (response.FullTicketInfo, error) {
 	const op = "storage.postgresql.GetFullTicketInfo"
 
 	type combinedRow struct {
@@ -123,22 +123,22 @@ func (s *StorageRepo) GetFullTicketInfo(ctx context.Context, ticketNumber string
 	var combinedRows []combinedRow
 
 	if err := s.db.SelectContext(ctx, &combinedRows, query.GetTicketFullInfo, ticketNumber); err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return response.FullTicketInfo{}, fmt.Errorf("%s: %w", op, err)
 	}
 
-	ticketMap := make(map[int]*response.FullTicketInfo)
+	var fullTicket response.FullTicketInfo
+	ticketExist := false
 	passengerMap := make(map[int]map[int]*response.PassengerWithDocs)
 
 	for _, row := range combinedRows {
-		ticketInfo, exists := ticketMap[row.TicketId]
-		if !exists {
-			//если билет новый, добавляем в мапу
-			ticketMap[row.TicketId] = &response.FullTicketInfo{
+
+		if !ticketExist {
+			fullTicket = response.FullTicketInfo{
 				Ticket:     row.Ticket,
 				Passengers: []response.PassengerWithDocs{},
 			}
-			ticketInfo = ticketMap[row.TicketId]
 			passengerMap[row.TicketId] = make(map[int]*response.PassengerWithDocs)
+			ticketExist = true
 		}
 		//проверяем наличие пассажира
 		passengerInfo, passengerExists := passengerMap[row.TicketId][row.Passenger.PassengerId]
@@ -149,28 +149,23 @@ func (s *StorageRepo) GetFullTicketInfo(ctx context.Context, ticketNumber string
 				Documents: []models.Document{},
 			}
 			passengerInfo = passengerMap[row.TicketId][row.Passenger.PassengerId]
-			ticketInfo.Passengers = append(ticketInfo.Passengers, *passengerInfo)
+			fullTicket.Passengers = append(fullTicket.Passengers, *passengerInfo)
 		}
 
 		//проверяем документ
 		if row.DocumentId != 0 && row.Document.PassengerId == row.Passenger.PassengerId {
 
-			for i := range ticketMap[row.TicketId].Passengers {
-				if ticketMap[row.TicketId].Passengers[i].PassengerId == row.Passenger.PassengerId {
-					ticketMap[row.TicketId].Passengers[i].Documents =
-						append(ticketMap[row.TicketId].Passengers[i].Documents, row.Document)
+			for i := range fullTicket.Passengers {
+				if fullTicket.Passengers[i].PassengerId == row.Passenger.PassengerId {
+					fullTicket.Passengers[i].Documents =
+						append(fullTicket.Passengers[i].Documents, row.Document)
 				}
 			}
 		}
 
 	}
 
-	var result []*response.FullTicketInfo
-	for _, info := range ticketMap {
-		result = append(result, info)
-	}
-
-	return result, nil
+	return fullTicket, nil
 }
 
 func (s *StorageRepo) UpdateTicketInfo(ctx context.Context, ticketId string, updateData requests.TicketUpdateRequest) (*models.Ticket, error) {
@@ -219,10 +214,19 @@ func (s *StorageRepo) UpdateTicketInfo(ctx context.Context, ticketId string, upd
 		params = append(params, *updateData.ArrivalDate)
 		idx++
 	}
+	if updateData.PassengerId != nil {
+		if idx > 1 {
+			query += ", "
+		}
+		query += " passenger_id = $" + strconv.Itoa(idx)
+		params = append(params, *updateData.PassengerId)
+		idx++
+	}
 	query += " WHERE ticket_id = $" + strconv.Itoa(idx)
 	idx++
 	params = append(params, ticketId)
-	query += " RETURNING *;"
+	query += " RETURNING ticket_id, departure_point, destination_point," +
+		" order_number, service_provider, departure_date, arrival_date, passenger_id AS \"ticket.passenger_id\",created_at;"
 
 	var updatedTicket models.Ticket
 	if err := s.db.QueryRowxContext(ctx, query, params...).StructScan(&updatedTicket); err != nil {
@@ -323,12 +327,7 @@ func (s *StorageRepo) UpdateDocumentInfo(ctx context.Context, documentId string,
 func (s *StorageRepo) DeleteTicketById(ctx context.Context, ticketId string) error {
 	const op = "storage.postgres.DeleteTicketById"
 
-	_, err := s.db.QueryxContext(ctx, query.DeleteTicketPassenger, ticketId)
-	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
-	}
-
-	_, err = s.db.QueryxContext(ctx, query.DeleteTicket, ticketId)
+	_, err := s.db.QueryxContext(ctx, query.DeleteTicket, ticketId)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
