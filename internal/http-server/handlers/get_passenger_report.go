@@ -20,7 +20,7 @@ import (
 // @Param end_date query string true "Дата окончания в формате YYYY-MM-DD"
 // @Success 200 {array} response.FlightReport "Отчёт успешно получен"
 // @Failure 400 "Ошибка запроса или получения отчёта"
-// @Router /reports/passenger/{passengerId} [get]
+// @Router /api/reports/passenger/{passengerId} [get]
 func GetPassengerReport(ctx context.Context, flightService service.FlightService, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 

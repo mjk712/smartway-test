@@ -4,7 +4,7 @@
         "contact": {}
     },
     "paths": {
-        "/document/{documentId}": {
+        "/api/document/{documentId}": {
             "put": {
                 "description": "Обновляет данные документа по id",
                 "consumes": [
@@ -75,7 +75,7 @@
                 }
             }
         },
-        "/documents/{passengerId}": {
+        "/api/documents/{passengerId}": {
             "get": {
                 "description": "Возвращает список документов. Требует id пассажира.",
                 "produces": [
@@ -110,7 +110,7 @@
                 }
             }
         },
-        "/passenger/{passengerId}": {
+        "/api/passenger/{passengerId}": {
             "put": {
                 "description": "Обновляет данные пассажира по заданному id",
                 "consumes": [
@@ -181,7 +181,7 @@
                 }
             }
         },
-        "/passengers/{ticketNumber}": {
+        "/api/passengers/{ticketNumber}": {
             "get": {
                 "description": "Возвращает список пассажиров по номеру билета",
                 "produces": [
@@ -216,7 +216,7 @@
                 }
             }
         },
-        "/reports/passenger/{passengerId}": {
+        "/api/reports/passenger/{passengerId}": {
             "get": {
                 "description": "Возвращает отчет о пассажире по заданному `passengerId` и диапазону дат",
                 "produces": [
@@ -265,7 +265,7 @@
                 }
             }
         },
-        "/ticket/{ticketId}": {
+        "/api/ticket/{ticketId}": {
             "put": {
                 "description": "Обновляет данные билета по заданному `ticketId`",
                 "consumes": [
@@ -336,7 +336,7 @@
                 }
             }
         },
-        "/ticket/{ticketNumber}": {
+        "/api/ticket/{ticketNumber}": {
             "get": {
                 "description": "Возвращает полные данные о билете по заданному номеру",
                 "produces": [
@@ -359,10 +359,7 @@
                     "200": {
                         "description": "Информация о билете успешно получена",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/response.FullTicketInfo"
-                            }
+                            "$ref": "#/definitions/response.FullTicketInfo"
                         }
                     },
                     "400": {
@@ -371,7 +368,7 @@
                 }
             }
         },
-        "/tickets": {
+        "/api/tickets": {
             "get": {
                 "description": "Возвращает список всех доступных билетов",
                 "produces": [
@@ -454,6 +451,9 @@
                 "orderNumber": {
                     "type": "string"
                 },
+                "passengerId": {
+                    "type": "integer"
+                },
                 "serviceProvider": {
                     "type": "string"
                 },
@@ -493,6 +493,9 @@
                 },
                 "destinationPoint": {
                     "type": "string"
+                },
+                "passengerId": {
+                    "type": "integer"
                 },
                 "serviceProvider": {
                     "type": "string"
@@ -536,6 +539,9 @@
                 },
                 "orderNumber": {
                     "type": "string"
+                },
+                "passengerId": {
+                    "type": "integer"
                 },
                 "serviceProvider": {
                     "type": "string"

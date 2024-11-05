@@ -18,7 +18,7 @@ import (
 // @Param ticketNumber path string true "Номер билета"
 // @Success 200 {array} models.Passenger "Список пассажиров успешно получен"
 // @Failure 400 "Ошибка запроса или получения списка пассажиров"
-// @Router /passengers/{ticketNumber} [get]
+// @Router /api/passengers/{ticketNumber} [get]
 func GetPassengersByTicketNumberHandler(ctx context.Context, flightService service.FlightService, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.GetPassengersByTicketNumber"

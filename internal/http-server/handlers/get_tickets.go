@@ -16,7 +16,7 @@ import (
 // @Produce json
 // @Success 200 {array} models.Ticket "Список билетов успешно получен"
 // @Failure 400 "Ошибка запроса или получения списка билетов"
-// @Router /tickets [get]
+// @Router /api/tickets [get]
 func GetTicketsHandler(ctx context.Context, flightService service.FlightService, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.GetTickets"

@@ -19,7 +19,7 @@ import (
 // @Param ticketId path int true "Ticket ID"
 // @Success 200 "Билет успешно удалён"
 // @Failure 404 "Ошибка в запросе или при удалении билета"
-// @Router /ticket/{ticketId} [delete]
+// @Router /api/ticket/{ticketId} [delete]
 func DeleteTicketHandler(ctx context.Context, flightService service.FlightService, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.DeleteTicket"

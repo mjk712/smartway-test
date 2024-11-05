@@ -18,7 +18,7 @@ import (
 // @Param ticketNumber path string true "Номер билета"
 // @Success 200 {object} response.FullTicketInfo "Информация о билете успешно получена"
 // @Failure 400 "Ошибка запроса или получения полной информации о билете"
-// @Router /ticket/{ticketNumber} [get]
+// @Router /api/ticket/{ticketNumber} [get]
 func GetTicketFullInfo(ctx context.Context, flightService service.FlightService, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.GetTicketFullInfo"

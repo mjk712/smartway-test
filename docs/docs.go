@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/document/{documentId}": {
+        "/api/document/{documentId}": {
             "put": {
                 "description": "Обновляет данные документа по id",
                 "consumes": [
@@ -86,7 +86,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/documents/{passengerId}": {
+        "/api/documents/{passengerId}": {
             "get": {
                 "description": "Возвращает список документов. Требует id пассажира.",
                 "produces": [
@@ -121,7 +121,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/passenger/{passengerId}": {
+        "/api/passenger/{passengerId}": {
             "put": {
                 "description": "Обновляет данные пассажира по заданному id",
                 "consumes": [
@@ -192,7 +192,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/passengers/{ticketNumber}": {
+        "/api/passengers/{ticketNumber}": {
             "get": {
                 "description": "Возвращает список пассажиров по номеру билета",
                 "produces": [
@@ -227,7 +227,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/reports/passenger/{passengerId}": {
+        "/api/reports/passenger/{passengerId}": {
             "get": {
                 "description": "Возвращает отчет о пассажире по заданному ` + "`" + `passengerId` + "`" + ` и диапазону дат",
                 "produces": [
@@ -276,7 +276,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/ticket/{ticketId}": {
+        "/api/ticket/{ticketId}": {
             "put": {
                 "description": "Обновляет данные билета по заданному ` + "`" + `ticketId` + "`" + `",
                 "consumes": [
@@ -347,7 +347,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/ticket/{ticketNumber}": {
+        "/api/ticket/{ticketNumber}": {
             "get": {
                 "description": "Возвращает полные данные о билете по заданному номеру",
                 "produces": [
@@ -370,10 +370,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Информация о билете успешно получена",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/response.FullTicketInfo"
-                            }
+                            "$ref": "#/definitions/response.FullTicketInfo"
                         }
                     },
                     "400": {
@@ -382,7 +379,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/tickets": {
+        "/api/tickets": {
             "get": {
                 "description": "Возвращает список всех доступных билетов",
                 "produces": [
@@ -465,6 +462,9 @@ const docTemplate = `{
                 "orderNumber": {
                     "type": "string"
                 },
+                "passengerId": {
+                    "type": "integer"
+                },
                 "serviceProvider": {
                     "type": "string"
                 },
@@ -504,6 +504,9 @@ const docTemplate = `{
                 },
                 "destinationPoint": {
                     "type": "string"
+                },
+                "passengerId": {
+                    "type": "integer"
                 },
                 "serviceProvider": {
                     "type": "string"
@@ -547,6 +550,9 @@ const docTemplate = `{
                 },
                 "orderNumber": {
                     "type": "string"
+                },
+                "passengerId": {
+                    "type": "integer"
                 },
                 "serviceProvider": {
                     "type": "string"

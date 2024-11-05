@@ -19,7 +19,7 @@ import (
 // @Param passengerId path int true "Passenger ID"
 // @Success 200 {array} models.Document "Список продуктов успешно получен"
 // @Failure 404 "Ошибка в запросе или при получении списка документов"
-// @Router /documents/{passengerId} [get]
+// @Router /api/documents/{passengerId} [get]
 func GetDocumentsByPassengerId(ctx context.Context, flightService service.FlightService, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.GetDocumentsByPassengerId"

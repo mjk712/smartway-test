@@ -22,7 +22,7 @@ import (
 // @Param ticket body requests.TicketUpdateRequest true "Данные для обновления информации о билете"
 // @Success 200 {object} models.Ticket "Билет успешно обновлён"
 // @Failure 400 "Ошибка запроса или обновления билета"
-// @Router /ticket/{ticketId} [put]
+// @Router /api/ticket/{ticketId} [put]
 func UpdateTicketInfo(ctx context.Context, flightService service.FlightService, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handler.UpdateTicketInfo"

@@ -22,7 +22,7 @@ import (
 // @Param document body requests.DocumentUpdateRequest true "Данные для обновления документа"
 // @Success 200 {object} models.Document "Документ успешно обновлён"
 // @Failure 400 "Ошибка запроса или обновления документа"
-// @Router /document/{documentId} [put]
+// @Router /api/document/{documentId} [put]
 func UpdateDocumentInfo(ctx context.Context, flightService service.FlightService, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handler.UpdateDocumentInfo"

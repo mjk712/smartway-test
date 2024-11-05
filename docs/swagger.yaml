@@ -35,6 +35,8 @@ definitions:
         type: string
       orderNumber:
         type: string
+      passengerId:
+        type: integer
       serviceProvider:
         type: string
       ticketId:
@@ -61,6 +63,8 @@ definitions:
         type: string
       destinationPoint:
         type: string
+      passengerId:
+        type: integer
       serviceProvider:
         type: string
     type: object
@@ -89,6 +93,8 @@ definitions:
         type: string
       orderNumber:
         type: string
+      passengerId:
+        type: integer
       serviceProvider:
         type: string
       ticketId:
@@ -121,7 +127,7 @@ definitions:
 info:
   contact: {}
 paths:
-  /document/{documentId}:
+  /api/document/{documentId}:
     delete:
       consumes:
       - application/json
@@ -168,7 +174,7 @@ paths:
       summary: Обновление информации о документе
       tags:
       - Документы
-  /documents/{passengerId}:
+  /api/documents/{passengerId}:
     get:
       description: Возвращает список документов. Требует id пассажира.
       parameters:
@@ -191,7 +197,7 @@ paths:
       summary: Получение списка документов
       tags:
       - Документы
-  /passenger/{passengerId}:
+  /api/passenger/{passengerId}:
     delete:
       consumes:
       - application/json
@@ -238,7 +244,7 @@ paths:
       summary: Обновление информации о пассажире
       tags:
       - Пассажиры
-  /passengers/{ticketNumber}:
+  /api/passengers/{ticketNumber}:
     get:
       description: Возвращает список пассажиров по номеру билета
       parameters:
@@ -261,7 +267,7 @@ paths:
       summary: Получение списка пассажиров по номеру билета
       tags:
       - Пассажиры
-  /reports/passenger/{passengerId}:
+  /api/reports/passenger/{passengerId}:
     get:
       description: Возвращает отчет о пассажире по заданному `passengerId` и диапазону
         дат
@@ -295,7 +301,7 @@ paths:
       summary: Получение отчета о пассажире
       tags:
       - Пассажиры
-  /ticket/{ticketId}:
+  /api/ticket/{ticketId}:
     delete:
       consumes:
       - application/json
@@ -342,7 +348,7 @@ paths:
       summary: Обновление информации о билете
       tags:
       - Билеты
-  /ticket/{ticketNumber}:
+  /api/ticket/{ticketNumber}:
     get:
       description: Возвращает полные данные о билете по заданному номеру
       parameters:
@@ -357,15 +363,13 @@ paths:
         "200":
           description: Информация о билете успешно получена
           schema:
-            items:
-              $ref: '#/definitions/response.FullTicketInfo'
-            type: array
+            $ref: '#/definitions/response.FullTicketInfo'
         "400":
           description: Ошибка запроса или получения полной информации о билете
       summary: Получение полной информации о билете
       tags:
       - Билеты
-  /tickets:
+  /api/tickets:
     get:
       description: Возвращает список всех доступных билетов
       produces:
