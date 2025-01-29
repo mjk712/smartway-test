@@ -11,14 +11,14 @@ import (
 )
 
 type FlightService interface {
-	GetTickets(ctx context.Context) ([]*models.Ticket, error)
-	GetPassengersByTicketNumber(ctx context.Context, ticketNumber string) ([]*models.Passenger, error)
-	GetDocumentsByPassengerId(ctx context.Context, passengerId string) ([]*models.Document, error)
+	GetTickets(ctx context.Context) ([]models.Ticket, error)
+	GetPassengersByTicketNumber(ctx context.Context, ticketNumber string) ([]models.Passenger, error)
+	GetDocumentsByPassengerId(ctx context.Context, passengerId string) ([]models.Document, error)
 	GetFullTicketInfo(ctx context.Context, ticketNumber string) (response.FullTicketInfo, error)
-	GetPassengerReport(ctx context.Context, passengerId string, startDate time.Time, endDate time.Time) ([]*response.FlightReport, error)
-	UpdateTicketInfo(ctx context.Context, ticketId string, updateData requests.TicketUpdateRequest) (*models.Ticket, error)
-	UpdatePassengerInfo(ctx context.Context, passengerId string, updateData requests.UpdatePassengerRequest) (*models.Passenger, error)
-	UpdateDocumentInfo(ctx context.Context, documentId string, updateData requests.DocumentUpdateRequest) (*models.Document, error)
+	GetPassengerReport(ctx context.Context, passengerId string, startDate time.Time, endDate time.Time) ([]response.FlightReport, error)
+	UpdateTicketInfo(ctx context.Context, ticketId string, updateData requests.TicketUpdateRequest) (models.Ticket, error)
+	UpdatePassengerInfo(ctx context.Context, passengerId string, updateData requests.UpdatePassengerRequest) (models.Passenger, error)
+	UpdateDocumentInfo(ctx context.Context, documentId string, updateData requests.DocumentUpdateRequest) (models.Document, error)
 	DeleteTicketById(ctx context.Context, ticketId string) error
 	DeletePassengerById(ctx context.Context, passengerId string) error
 	DeleteDocumentById(ctx context.Context, documentId string) error
@@ -34,7 +34,7 @@ func NewFlightService(repo storage.Storage) FlightService {
 	}
 }
 
-func (f *FlightServiceImpl) GetTickets(ctx context.Context) ([]*models.Ticket, error) {
+func (f *FlightServiceImpl) GetTickets(ctx context.Context) ([]models.Ticket, error) {
 	const op = "FlightService.GetTickets"
 	tickets, err := f.storageRepository.GetTickets(ctx)
 	if err != nil {
@@ -43,7 +43,7 @@ func (f *FlightServiceImpl) GetTickets(ctx context.Context) ([]*models.Ticket, e
 	return tickets, nil
 }
 
-func (f *FlightServiceImpl) GetPassengersByTicketNumber(ctx context.Context, ticketNumber string) ([]*models.Passenger, error) {
+func (f *FlightServiceImpl) GetPassengersByTicketNumber(ctx context.Context, ticketNumber string) ([]models.Passenger, error) {
 	const op = "FlightService.GetPassengersByTicketNumber"
 	passengers, err := f.storageRepository.GetPassengersByTicketNumber(ctx, ticketNumber)
 	if err != nil {
@@ -52,7 +52,7 @@ func (f *FlightServiceImpl) GetPassengersByTicketNumber(ctx context.Context, tic
 	return passengers, nil
 }
 
-func (f *FlightServiceImpl) GetDocumentsByPassengerId(ctx context.Context, passengerId string) ([]*models.Document, error) {
+func (f *FlightServiceImpl) GetDocumentsByPassengerId(ctx context.Context, passengerId string) ([]models.Document, error) {
 	const op = "FlightService.GetDocumentsByPassengerId"
 	documents, err := f.storageRepository.GetDocumentsByPassengerId(ctx, passengerId)
 	if err != nil {
@@ -70,7 +70,7 @@ func (f *FlightServiceImpl) GetFullTicketInfo(ctx context.Context, ticketNumber 
 	return ticketInfo, nil
 }
 
-func (f *FlightServiceImpl) GetPassengerReport(ctx context.Context, passengerId string, startDate time.Time, endDate time.Time) ([]*response.FlightReport, error) {
+func (f *FlightServiceImpl) GetPassengerReport(ctx context.Context, passengerId string, startDate time.Time, endDate time.Time) ([]response.FlightReport, error) {
 	const op = "FlightService.GetPassengerReport"
 	report, err := f.storageRepository.GetPassengerReport(ctx, passengerId, startDate, endDate)
 	if err != nil {
@@ -79,29 +79,29 @@ func (f *FlightServiceImpl) GetPassengerReport(ctx context.Context, passengerId 
 	return report, nil
 }
 
-func (f *FlightServiceImpl) UpdateTicketInfo(ctx context.Context, ticketId string, updateData requests.TicketUpdateRequest) (*models.Ticket, error) {
+func (f *FlightServiceImpl) UpdateTicketInfo(ctx context.Context, ticketId string, updateData requests.TicketUpdateRequest) (models.Ticket, error) {
 	const op = "FlightService.UpdateTicketInfo"
 	updatedTicket, err := f.storageRepository.UpdateTicketInfo(ctx, ticketId, updateData)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return updatedTicket, fmt.Errorf("%s: %w", op, err)
 	}
 	return updatedTicket, nil
 }
 
-func (f *FlightServiceImpl) UpdatePassengerInfo(ctx context.Context, passengerId string, updateData requests.UpdatePassengerRequest) (*models.Passenger, error) {
+func (f *FlightServiceImpl) UpdatePassengerInfo(ctx context.Context, passengerId string, updateData requests.UpdatePassengerRequest) (models.Passenger, error) {
 	const op = "FlightService.UpdatePassengerInfo"
 	passenger, err := f.storageRepository.UpdatePassengerInfo(ctx, passengerId, updateData)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return passenger, fmt.Errorf("%s: %w", op, err)
 	}
 	return passenger, nil
 }
 
-func (f *FlightServiceImpl) UpdateDocumentInfo(ctx context.Context, documentId string, updateData requests.DocumentUpdateRequest) (*models.Document, error) {
+func (f *FlightServiceImpl) UpdateDocumentInfo(ctx context.Context, documentId string, updateData requests.DocumentUpdateRequest) (models.Document, error) {
 	const op = "FlightService.UpdateDocumentInfo"
 	updatedDocument, err := f.storageRepository.UpdateDocumentInfo(ctx, documentId, updateData)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return updatedDocument, fmt.Errorf("%s: %w", op, err)
 	}
 	return updatedDocument, nil
 }

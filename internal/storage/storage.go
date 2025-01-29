@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -12,19 +13,18 @@ import (
 	"smartway-test/internal/http-server/response"
 	"smartway-test/internal/models"
 	"smartway-test/internal/storage/query"
-	"strconv"
 	"time"
 )
 
 type Storage interface {
-	GetTickets(ctx context.Context) ([]*models.Ticket, error)
-	GetPassengersByTicketNumber(ctx context.Context, ticketNumber string) ([]*models.Passenger, error)
-	GetDocumentsByPassengerId(ctx context.Context, passengerId string) ([]*models.Document, error)
+	GetTickets(ctx context.Context) ([]models.Ticket, error)
+	GetPassengersByTicketNumber(ctx context.Context, ticketNumber string) ([]models.Passenger, error)
+	GetDocumentsByPassengerId(ctx context.Context, passengerId string) ([]models.Document, error)
 	GetFullTicketInfo(ctx context.Context, ticketNumber string) (response.FullTicketInfo, error)
-	GetPassengerReport(ctx context.Context, passengerId string, startDate time.Time, endDate time.Time) ([]*response.FlightReport, error)
-	UpdateTicketInfo(ctx context.Context, ticketId string, updateData requests.TicketUpdateRequest) (*models.Ticket, error)
-	UpdatePassengerInfo(ctx context.Context, passengerId string, updateData requests.UpdatePassengerRequest) (*models.Passenger, error)
-	UpdateDocumentInfo(ctx context.Context, documentId string, updateData requests.DocumentUpdateRequest) (*models.Document, error)
+	GetPassengerReport(ctx context.Context, passengerId string, startDate time.Time, endDate time.Time) ([]response.FlightReport, error)
+	UpdateTicketInfo(ctx context.Context, ticketId string, updateData requests.TicketUpdateRequest) (models.Ticket, error)
+	UpdatePassengerInfo(ctx context.Context, passengerId string, updateData requests.UpdatePassengerRequest) (models.Passenger, error)
+	UpdateDocumentInfo(ctx context.Context, documentId string, updateData requests.DocumentUpdateRequest) (models.Document, error)
 	DeleteTicketById(ctx context.Context, ticketId string) error
 	DeletePassengerById(ctx context.Context, passengerId string) error
 	DeleteDocumentById(ctx context.Context, documentId string) error
@@ -53,10 +53,10 @@ func New(connectionString string) (Storage, error) {
 	return &StorageRepo{db: db}, nil
 }
 
-func (s *StorageRepo) GetTickets(ctx context.Context) ([]*models.Ticket, error) {
+func (s *StorageRepo) GetTickets(ctx context.Context) ([]models.Ticket, error) {
 	const op = "storage.postgresql.GetTickets"
 
-	var tickets []*models.Ticket
+	var tickets []models.Ticket
 
 	rows, err := s.db.QueryxContext(ctx, query.GetTickets)
 	if err != nil {
@@ -67,15 +67,15 @@ func (s *StorageRepo) GetTickets(ctx context.Context) ([]*models.Ticket, error) 
 		if err := rows.StructScan(&t); err != nil {
 			return nil, fmt.Errorf("scan rows %s: %w", op, err)
 		}
-		tickets = append(tickets, &t)
+		tickets = append(tickets, t)
 	}
 	rows.Close()
 	return tickets, nil
 }
 
-func (s *StorageRepo) GetPassengersByTicketNumber(ctx context.Context, ticketNumber string) ([]*models.Passenger, error) {
+func (s *StorageRepo) GetPassengersByTicketNumber(ctx context.Context, ticketNumber string) ([]models.Passenger, error) {
 	const op = "storage.postgresql.GetPassengersByTicketNumber"
-	var passengers []*models.Passenger
+	var passengers []models.Passenger
 
 	rows, err := s.db.QueryxContext(ctx, query.GetPassengersByTicketNumber, ticketNumber)
 	if err != nil {
@@ -87,15 +87,15 @@ func (s *StorageRepo) GetPassengersByTicketNumber(ctx context.Context, ticketNum
 		if err := rows.StructScan(&p); err != nil {
 			return nil, fmt.Errorf("scan rows %s: %w", op, err)
 		}
-		passengers = append(passengers, &p)
+		passengers = append(passengers, p)
 	}
 	rows.Close()
 	return passengers, nil
 }
 
-func (s *StorageRepo) GetDocumentsByPassengerId(ctx context.Context, passengerId string) ([]*models.Document, error) {
+func (s *StorageRepo) GetDocumentsByPassengerId(ctx context.Context, passengerId string) ([]models.Document, error) {
 	const op = "storage.postgresql.GetDocumentsByPassengerId"
-	var documents []*models.Document
+	var documents []models.Document
 	rows, err := s.db.QueryxContext(ctx, query.GetDocumentsByPassengerId, passengerId)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
@@ -105,7 +105,7 @@ func (s *StorageRepo) GetDocumentsByPassengerId(ctx context.Context, passengerId
 		if err := rows.StructScan(&d); err != nil {
 			return nil, fmt.Errorf("scan rows %s: %w", op, err)
 		}
-		documents = append(documents, &d)
+		documents = append(documents, d)
 	}
 	rows.Close()
 	return documents, nil
@@ -168,160 +168,102 @@ func (s *StorageRepo) GetFullTicketInfo(ctx context.Context, ticketNumber string
 	return fullTicket, nil
 }
 
-func (s *StorageRepo) UpdateTicketInfo(ctx context.Context, ticketId string, updateData requests.TicketUpdateRequest) (*models.Ticket, error) {
+func (s *StorageRepo) UpdateTicketInfo(ctx context.Context, ticketId string, updateData requests.TicketUpdateRequest) (models.Ticket, error) {
 	const op = "storage.postgresql.UpdateTicketInfo"
 
-	query := "UPDATE flight_ticket SET"
-	params := []interface{}{}
-	idx := 1
+	queryBuilder := sq.Update("flight_ticket").
+		Where(sq.Eq{"ticket_id": ticketId}).
+		Suffix("RETURNING ticket_id, departure_point, destination_point, order_number, service_provider, departure_date, arrival_date, passenger_id AS \"ticket.passenger_id\", created_at").
+		PlaceholderFormat(sq.Dollar)
+
 	if updateData.DeparturePoint != nil {
-		if idx > 1 {
-			query += ", "
-		}
-		query += " departure_point = $" + strconv.Itoa(idx)
-		params = append(params, *updateData.DeparturePoint)
-		idx++
+		queryBuilder = queryBuilder.Set("departure_point", updateData.DeparturePoint)
 	}
 	if updateData.DestinationPoint != nil {
-		if idx > 1 {
-			query += ", "
-		}
-		query += " destination_point = $" + strconv.Itoa(idx)
-		params = append(params, *updateData.DestinationPoint)
-		idx++
+		queryBuilder = queryBuilder.Set("destination_point", updateData.DestinationPoint)
 	}
 	if updateData.ServiceProvider != nil {
-		if idx > 1 {
-			query += ", "
-		}
-		query += " service_provider = $" + strconv.Itoa(idx)
-		params = append(params, *updateData.ServiceProvider)
-		idx++
+		queryBuilder = queryBuilder.Set("service_provider", updateData.ServiceProvider)
 	}
 	if updateData.DepartureDate != nil {
-		if idx > 1 {
-			query += ", "
-		}
-		query += " departure_date = $" + strconv.Itoa(idx)
-		params = append(params, *updateData.DepartureDate)
-		idx++
+		queryBuilder = queryBuilder.Set("departure_date", updateData.DepartureDate)
 	}
 	if updateData.ArrivalDate != nil {
-		if idx > 1 {
-			query += ", "
-		}
-		query += " arrival_date = $" + strconv.Itoa(idx)
-		params = append(params, *updateData.ArrivalDate)
-		idx++
+		queryBuilder = queryBuilder.Set("arrival_date", updateData.ArrivalDate)
 	}
 	if updateData.PassengerId != nil {
-		if idx > 1 {
-			query += ", "
-		}
-		query += " passenger_id = $" + strconv.Itoa(idx)
-		params = append(params, *updateData.PassengerId)
-		idx++
+		queryBuilder = queryBuilder.Set("passenger_id", updateData.PassengerId)
 	}
-	query += " WHERE ticket_id = $" + strconv.Itoa(idx)
-	idx++
-	params = append(params, ticketId)
-	query += " RETURNING ticket_id, departure_point, destination_point," +
-		" order_number, service_provider, departure_date, arrival_date, passenger_id AS \"ticket.passenger_id\",created_at;"
+
+	query, args, err := queryBuilder.ToSql()
+	if err != nil {
+		return models.Ticket{}, fmt.Errorf("%s: failed to build query: %w", op, err)
+	}
 
 	var updatedTicket models.Ticket
-	if err := s.db.QueryRowxContext(ctx, query, params...).StructScan(&updatedTicket); err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+	if err := s.db.QueryRowxContext(ctx, query, args...).StructScan(&updatedTicket); err != nil {
+		return models.Ticket{}, fmt.Errorf("%s: %w", op, err)
 	}
-
-	return &updatedTicket, nil
+	return updatedTicket, nil
 }
 
-func (s *StorageRepo) UpdatePassengerInfo(ctx context.Context, passengerId string, updateData requests.UpdatePassengerRequest) (*models.Passenger, error) {
+func (s *StorageRepo) UpdatePassengerInfo(ctx context.Context, passengerId string, updateData requests.UpdatePassengerRequest) (models.Passenger, error) {
 	const op = "storage.postgresql.UpdatePassengerInfo"
 
-	query := "UPDATE passenger SET"
-	params := []interface{}{}
-	idx := 1
-	if updateData.FirstName != nil {
-		if idx > 1 {
-			query += ", "
-		}
-		query += " first_name = $" + strconv.Itoa(idx)
-		params = append(params, *updateData.FirstName)
-		idx++
+	queryBuilder := sq.Update("passenger").
+		Where(sq.Eq{"passenger_id": passengerId}).
+		Suffix("RETURNING *").
+		PlaceholderFormat(sq.Dollar)
+
+	if updateData.MiddleName != nil {
+		queryBuilder = queryBuilder.Set("middle_name", *updateData.MiddleName)
 	}
 	if updateData.LastName != nil {
-		if idx > 1 {
-			query += ", "
-		}
-		query += " last_name = $" + strconv.Itoa(idx)
-		params = append(params, *updateData.LastName)
-		idx++
+		queryBuilder = queryBuilder.Set("last_name", *updateData.LastName)
 	}
-	if updateData.MiddleName != nil {
-		if idx > 1 {
-			query += ", "
-		}
-		query += " middle_name = $" + strconv.Itoa(idx)
-		params = append(params, *updateData.MiddleName)
-		idx++
+	if updateData.FirstName != nil {
+		queryBuilder = queryBuilder.Set("first_name", *updateData.FirstName)
 	}
 
-	query += " WHERE passenger_id = $" + strconv.Itoa(idx)
-	idx++
-	params = append(params, passengerId)
-	query += " RETURNING *;"
+	query, args, err := queryBuilder.ToSql()
+	if err != nil {
+		return models.Passenger{}, fmt.Errorf("%s: failed to build query: %w", op, err)
+	}
 
 	var updatedPassenger models.Passenger
-	if err := s.db.QueryRowxContext(ctx, query, params...).StructScan(&updatedPassenger); err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+
+	if err := s.db.QueryRowxContext(ctx, query, args...).StructScan(&updatedPassenger); err != nil {
+		return models.Passenger{}, fmt.Errorf("%s: %w", op, err)
 	}
 
-	return &updatedPassenger, nil
+	return updatedPassenger, nil
 }
 
-func (s *StorageRepo) UpdateDocumentInfo(ctx context.Context, documentId string, updateData requests.DocumentUpdateRequest) (*models.Document, error) {
+func (s *StorageRepo) UpdateDocumentInfo(ctx context.Context, documentId string, updateData requests.DocumentUpdateRequest) (models.Document, error) {
 	const op = "storage.postgresql.UpdateDocumentInfo"
+	queryBuilder := sq.Update("document").
+		Where(sq.Eq{"document_id": documentId}).
+		Suffix("RETURNING document_id, passenger_id AS \"document.passenger_id\", document_type, document_number").
+		PlaceholderFormat(sq.Dollar)
 
-	query := "UPDATE Document SET"
-	params := []interface{}{}
-	idx := 1
-	if updateData.PassengerId != nil {
-		if idx > 1 {
-			query += ", "
-		}
-		query += " passenger_id = $" + strconv.Itoa(idx)
-		params = append(params, *updateData.PassengerId)
-		idx++
-	}
 	if updateData.DocumentType != nil {
-		if idx > 1 {
-			query += ", "
-		}
-		query += " document_type = $" + strconv.Itoa(idx)
-		params = append(params, *updateData.DocumentType)
-		idx++
-	}
-	if updateData.DocumentNumber != nil {
-		if idx > 1 {
-			query += ", "
-		}
-		query += " document_number = $" + strconv.Itoa(idx)
-		params = append(params, *updateData.DocumentNumber)
-		idx++
+		queryBuilder = queryBuilder.Set("document_type", *updateData.DocumentType)
 	}
 
-	query += " WHERE document_id = $" + strconv.Itoa(idx)
-	idx++
-	params = append(params, documentId)
-	query += " RETURNING document_id, passenger_id AS \"document.passenger_id\", document_type, document_number;"
+	if updateData.DocumentNumber != nil {
+		queryBuilder = queryBuilder.Set("document_number", *updateData.DocumentNumber)
+	}
+
+	query, args, err := queryBuilder.ToSql()
+	if err != nil {
+		return models.Document{}, fmt.Errorf("%s: failed to build query: %w", op, err)
+	}
 
 	var updatedDocument models.Document
-	if err := s.db.QueryRowxContext(ctx, query, params...).StructScan(&updatedDocument); err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+	if err := s.db.QueryRowxContext(ctx, query, args...).StructScan(&updatedDocument); err != nil {
+		return models.Document{}, fmt.Errorf("%s: %w", op, err)
 	}
-
-	return &updatedDocument, nil
+	return updatedDocument, nil
 }
 
 func (s *StorageRepo) DeleteTicketById(ctx context.Context, ticketId string) error {
@@ -356,10 +298,10 @@ func (s *StorageRepo) DeleteDocumentById(ctx context.Context, documentId string)
 	return nil
 }
 
-func (s *StorageRepo) GetPassengerReport(ctx context.Context, passengerId string, startDate time.Time, endDate time.Time) ([]*response.FlightReport, error) {
+func (s *StorageRepo) GetPassengerReport(ctx context.Context, passengerId string, startDate time.Time, endDate time.Time) ([]response.FlightReport, error) {
 	const op = "storage.postgres.GetPassengerReport"
 
-	var report []*response.FlightReport
+	var report []response.FlightReport
 	err := s.db.SelectContext(ctx, &report, query.GetPassengerReport, startDate, endDate, passengerId)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
