@@ -31,7 +31,7 @@ type Storage interface {
 }
 
 type StorageRepo struct {
-	db *sqlx.DB
+	DB *sqlx.DB
 }
 
 func New(connectionString string) (Storage, error) {
@@ -50,7 +50,7 @@ func New(connectionString string) (Storage, error) {
 	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	return &StorageRepo{db: db}, nil
+	return &StorageRepo{DB: db}, nil
 }
 
 func (s *StorageRepo) GetTickets(ctx context.Context) ([]models.Ticket, error) {
@@ -58,7 +58,7 @@ func (s *StorageRepo) GetTickets(ctx context.Context) ([]models.Ticket, error) {
 
 	var tickets []models.Ticket
 
-	rows, err := s.db.QueryxContext(ctx, query.GetTickets)
+	rows, err := s.DB.QueryxContext(ctx, query.GetTickets)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -77,7 +77,7 @@ func (s *StorageRepo) GetPassengersByTicketNumber(ctx context.Context, ticketNum
 	const op = "storage.postgresql.GetPassengersByTicketNumber"
 	var passengers []models.Passenger
 
-	rows, err := s.db.QueryxContext(ctx, query.GetPassengersByTicketNumber, ticketNumber)
+	rows, err := s.DB.QueryxContext(ctx, query.GetPassengersByTicketNumber, ticketNumber)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 
@@ -96,7 +96,7 @@ func (s *StorageRepo) GetPassengersByTicketNumber(ctx context.Context, ticketNum
 func (s *StorageRepo) GetDocumentsByPassengerId(ctx context.Context, passengerId string) ([]models.Document, error) {
 	const op = "storage.postgresql.GetDocumentsByPassengerId"
 	var documents []models.Document
-	rows, err := s.db.QueryxContext(ctx, query.GetDocumentsByPassengerId, passengerId)
+	rows, err := s.DB.QueryxContext(ctx, query.GetDocumentsByPassengerId, passengerId)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -122,7 +122,7 @@ func (s *StorageRepo) GetFullTicketInfo(ctx context.Context, ticketNumber string
 
 	var combinedRows []combinedRow
 
-	if err := s.db.SelectContext(ctx, &combinedRows, query.GetTicketFullInfo, ticketNumber); err != nil {
+	if err := s.DB.SelectContext(ctx, &combinedRows, query.GetTicketFullInfo, ticketNumber); err != nil {
 		return response.FullTicketInfo{}, fmt.Errorf("%s: %w", op, err)
 	}
 
@@ -201,7 +201,7 @@ func (s *StorageRepo) UpdateTicketInfo(ctx context.Context, ticketId string, upd
 	}
 
 	var updatedTicket models.Ticket
-	if err := s.db.QueryRowxContext(ctx, query, args...).StructScan(&updatedTicket); err != nil {
+	if err := s.DB.QueryRowxContext(ctx, query, args...).StructScan(&updatedTicket); err != nil {
 		return models.Ticket{}, fmt.Errorf("%s: %w", op, err)
 	}
 	return updatedTicket, nil
@@ -232,7 +232,7 @@ func (s *StorageRepo) UpdatePassengerInfo(ctx context.Context, passengerId strin
 
 	var updatedPassenger models.Passenger
 
-	if err := s.db.QueryRowxContext(ctx, query, args...).StructScan(&updatedPassenger); err != nil {
+	if err := s.DB.QueryRowxContext(ctx, query, args...).StructScan(&updatedPassenger); err != nil {
 		return models.Passenger{}, fmt.Errorf("%s: %w", op, err)
 	}
 
@@ -260,7 +260,7 @@ func (s *StorageRepo) UpdateDocumentInfo(ctx context.Context, documentId string,
 	}
 
 	var updatedDocument models.Document
-	if err := s.db.QueryRowxContext(ctx, query, args...).StructScan(&updatedDocument); err != nil {
+	if err := s.DB.QueryRowxContext(ctx, query, args...).StructScan(&updatedDocument); err != nil {
 		return models.Document{}, fmt.Errorf("%s: %w", op, err)
 	}
 	return updatedDocument, nil
@@ -269,7 +269,7 @@ func (s *StorageRepo) UpdateDocumentInfo(ctx context.Context, documentId string,
 func (s *StorageRepo) DeleteTicketById(ctx context.Context, ticketId string) error {
 	const op = "storage.postgres.DeleteTicketById"
 
-	_, err := s.db.QueryxContext(ctx, query.DeleteTicket, ticketId)
+	_, err := s.DB.QueryxContext(ctx, query.DeleteTicket, ticketId)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -279,7 +279,7 @@ func (s *StorageRepo) DeleteTicketById(ctx context.Context, ticketId string) err
 func (s *StorageRepo) DeletePassengerById(ctx context.Context, passengerId string) error {
 	const op = "storage.postgres.DeletePassengerById"
 
-	_, err := s.db.QueryxContext(ctx, query.DeletePassenger, passengerId)
+	_, err := s.DB.QueryxContext(ctx, query.DeletePassenger, passengerId)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -290,7 +290,7 @@ func (s *StorageRepo) DeletePassengerById(ctx context.Context, passengerId strin
 func (s *StorageRepo) DeleteDocumentById(ctx context.Context, documentId string) error {
 	const op = "storage.postgres.DeleteDocumentById"
 
-	_, err := s.db.QueryxContext(ctx, query.DeleteDocument, documentId)
+	_, err := s.DB.QueryxContext(ctx, query.DeleteDocument, documentId)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -302,7 +302,7 @@ func (s *StorageRepo) GetPassengerReport(ctx context.Context, passengerId string
 	const op = "storage.postgres.GetPassengerReport"
 
 	var report []response.FlightReport
-	err := s.db.SelectContext(ctx, &report, query.GetPassengerReport, startDate, endDate, passengerId)
+	err := s.DB.SelectContext(ctx, &report, query.GetPassengerReport, startDate, endDate, passengerId)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
