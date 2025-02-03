@@ -1,3 +1,5 @@
+[![CI](https://github.com/mjk712/smartway-test/actions/workflows/ci.yml/badge.svg)](https://github.com/mjk712/smartway-test/actions/workflows/ci.yml)
+
 Web-сервис для работы с хранилищем данных перелётов
 
 Сборка: 
