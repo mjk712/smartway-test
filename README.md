@@ -1,5 +1,7 @@
 [![CI](https://github.com/mjk712/smartway-test/actions/workflows/ci.yaml/badge.svg)](https://github.com/mjk712/smartway-test/actions/workflows/ci.yaml)
 
+[![Coverage Status](https://coveralls.io/repos/github/mjk712/smartway-test/badge.svg?branch=main)](https://coveralls.io/github/mjk712/smartway-test?branch=main)
+
 Web-сервис для работы с хранилищем данных перелётов
 
 Сборка: 
