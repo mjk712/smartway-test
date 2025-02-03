@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/render"
 	"log/slog"
 	"net/http"
 	"smartway-test/internal/service"
@@ -38,6 +39,6 @@ func DeleteTicketHandler(ctx context.Context, flightService service.FlightServic
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(fmt.Sprintf("ticket with id %s deleted", ticketId)))
+		render.JSON(w, r, fmt.Sprintf("ticket with id %s deleted", ticketId))
 	}
 }

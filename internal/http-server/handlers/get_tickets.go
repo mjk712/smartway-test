@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"smartway-test/internal/service"
+	"smartway-test/internal/tools"
 )
 
 // GetTicketsHandler получает список всех билетов
@@ -29,7 +30,7 @@ func GetTicketsHandler(ctx context.Context, flightService service.FlightService,
 
 		tickets, err := flightService.GetTickets(ctx)
 		if err != nil {
-			log.Error("Error get tickets: ", err)
+			log.Error("Error get tickets: ", tools.ErrAttr(err))
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}

@@ -30,11 +30,9 @@ type HandlersTestSuite struct {
 	ctx         context.Context
 	server      *http.Server
 	config      *config.Config
-	log         *slog.Logger
 }
 
 func (suite *HandlersTestSuite) SetupSuite() {
-
 	suite.ctx = context.Background()
 
 	suite.config = &config.Config{HTTPServer: config.HTTPServer{Address: "127.0.0.1:8081"}}
@@ -70,6 +68,10 @@ func (suite *HandlersTestSuite) SetupSuite() {
 }
 
 func (suite *HandlersTestSuite) TearDownSuite() {
+	if err := suite.server.Shutdown(suite.ctx); err != nil {
+		suite.T().Fatal(err)
+	}
+
 	err := suite.pgContainer.Terminate(suite.ctx)
 	suite.Require().NoError(err)
 }

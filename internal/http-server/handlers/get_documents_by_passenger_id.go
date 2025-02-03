@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"smartway-test/internal/service"
+	"smartway-test/internal/tools"
 )
 
 // GetDocumentsByPassengerId Возвращает список документов по id пассажира.
@@ -32,7 +33,7 @@ func GetDocumentsByPassengerId(ctx context.Context, flightService service.Flight
 		passengerId := chi.URLParam(r, "passengerId")
 		documents, err := flightService.GetDocumentsByPassengerId(ctx, passengerId)
 		if err != nil {
-			log.Error("Error get documents by passenger id: ", err)
+			log.Error("Error get documents by passenger id: ", tools.ErrAttr(err))
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}

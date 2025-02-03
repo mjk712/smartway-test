@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"smartway-test/internal/service"
+	"smartway-test/internal/tools"
 )
 
 // GetTicketFullInfo получает полную информацию о билете
@@ -31,7 +32,7 @@ func GetTicketFullInfo(ctx context.Context, flightService service.FlightService,
 		ticketNumber := chi.URLParam(r, "ticketNumber")
 		ticket, err := flightService.GetFullTicketInfo(ctx, ticketNumber)
 		if err != nil {
-			log.Error("Error get passengers by ticket number: ", err)
+			log.Error("Error get passengers by ticket number: ", tools.ErrAttr(err))
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}

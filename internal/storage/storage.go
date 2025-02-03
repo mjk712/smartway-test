@@ -62,6 +62,7 @@ func (s *StorageRepo) GetTickets(ctx context.Context) ([]models.Ticket, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
+	defer rows.Close()
 	for rows.Next() {
 		var t models.Ticket
 		if err := rows.StructScan(&t); err != nil {
@@ -69,7 +70,6 @@ func (s *StorageRepo) GetTickets(ctx context.Context) ([]models.Ticket, error) {
 		}
 		tickets = append(tickets, t)
 	}
-	rows.Close()
 	return tickets, nil
 }
 
@@ -82,6 +82,7 @@ func (s *StorageRepo) GetPassengersByTicketNumber(ctx context.Context, ticketNum
 		return nil, fmt.Errorf("%s: %w", op, err)
 
 	}
+	defer rows.Close()
 	for rows.Next() {
 		var p models.Passenger
 		if err := rows.StructScan(&p); err != nil {
@@ -89,7 +90,6 @@ func (s *StorageRepo) GetPassengersByTicketNumber(ctx context.Context, ticketNum
 		}
 		passengers = append(passengers, p)
 	}
-	rows.Close()
 	return passengers, nil
 }
 
@@ -100,6 +100,7 @@ func (s *StorageRepo) GetDocumentsByPassengerId(ctx context.Context, passengerId
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
+	defer rows.Close()
 	for rows.Next() {
 		var d models.Document
 		if err := rows.StructScan(&d); err != nil {
@@ -107,7 +108,6 @@ func (s *StorageRepo) GetDocumentsByPassengerId(ctx context.Context, passengerId
 		}
 		documents = append(documents, d)
 	}
-	rows.Close()
 	return documents, nil
 }
 
@@ -300,7 +300,6 @@ func (s *StorageRepo) DeleteDocumentById(ctx context.Context, documentId string)
 
 func (s *StorageRepo) GetPassengerReport(ctx context.Context, passengerId string, startDate time.Time, endDate time.Time) ([]response.FlightReport, error) {
 	const op = "storage.postgres.GetPassengerReport"
-
 	var report []response.FlightReport
 	err := s.DB.SelectContext(ctx, &report, query.GetPassengerReport, startDate, endDate, passengerId)
 	if err != nil {

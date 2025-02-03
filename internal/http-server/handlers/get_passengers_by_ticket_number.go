@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"smartway-test/internal/service"
+	"smartway-test/internal/tools"
 )
 
 // GetPassengersByTicketNumberHandler получает список пассажиров по номеру билета
@@ -31,7 +32,7 @@ func GetPassengersByTicketNumberHandler(ctx context.Context, flightService servi
 		ticketNumber := chi.URLParam(r, "ticketNumber")
 		passengers, err := flightService.GetPassengersByTicketNumber(ctx, ticketNumber)
 		if err != nil {
-			log.Error("Error get passengers by ticket number: ", err)
+			log.Error("Error get passengers by ticket number: ", tools.ErrAttr(err))
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}

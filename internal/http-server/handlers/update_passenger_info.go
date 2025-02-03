@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"smartway-test/internal/http-server/requests"
 	"smartway-test/internal/service"
+	"smartway-test/internal/tools"
 )
 
 // UpdatePassengerInfo обновляет информацию о пассажире
@@ -45,7 +46,7 @@ func UpdatePassengerInfo(ctx context.Context, flightService service.FlightServic
 
 		updatedPassenger, err := flightService.UpdatePassengerInfo(ctx, passengerId, req)
 		if err != nil {
-			log.Error("Error updating ticket", err)
+			log.Error("Error updating ticket", tools.ErrAttr(err))
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}

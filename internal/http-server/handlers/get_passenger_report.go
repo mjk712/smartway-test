@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"smartway-test/internal/service"
+	"smartway-test/internal/tools"
 	"time"
 )
 
@@ -30,21 +31,21 @@ func GetPassengerReport(ctx context.Context, flightService service.FlightService
 
 		startDate, err := time.Parse("2006-01-02", startDateStr)
 		if err != nil {
-			log.Error("Invalid start date", err)
+			log.Error("Invalid start date: %s", tools.ErrAttr(err))
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
 		endDate, err := time.Parse("2006-01-02", endDateStr)
 		if err != nil {
-			log.Error("Invalid end date", err)
+			log.Error("Invalid end date: %s", tools.ErrAttr(err))
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
 		report, err := flightService.GetPassengerReport(ctx, passengerId, startDate, endDate)
 		if err != nil {
-			log.Error("Error getting report", err)
+			log.Error("Error getting report", tools.ErrAttr(err))
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}

@@ -9,6 +9,7 @@ import (
 	http_server "smartway-test/internal/http-server"
 	"smartway-test/internal/service"
 	"smartway-test/internal/storage"
+	"smartway-test/internal/tools"
 	"syscall"
 	"time"
 )
@@ -36,7 +37,7 @@ func main() {
 	//storage
 	repo, err := storage.New(cfg.ConnectionString)
 	if err != nil {
-		log.Error("failed to init storage", err)
+		log.Error("failed to init storage", tools.ErrAttr(err))
 		os.Exit(1)
 	}
 	//services
@@ -54,7 +55,7 @@ func main() {
 
 	go func() {
 		if err := serv.ListenAndServe(); err != nil {
-			log.Error("failed to start server", err)
+			log.Error("failed to start server", tools.ErrAttr(err))
 		}
 	}()
 	log.Info("server started")
@@ -66,7 +67,7 @@ func main() {
 	defer cancel()
 
 	if err := serv.Shutdown(ctx); err != nil {
-		log.Error("failed to shutdown server", err)
+		log.Error("failed to shutdown server", tools.ErrAttr(err))
 
 		os.Exit(1)
 	}
