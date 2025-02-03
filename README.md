@@ -1,4 +1,4 @@
-[![CI](https://github.com/mjk712/smartway-test/actions/workflows/ci.yml/badge.svg)](https://github.com/mjk712/smartway-test/actions/workflows/ci.yml)
+[![CI](https://github.com/mjk712/smartway-test/actions/workflows/ci.yaml/badge.svg)](https://github.com/mjk712/smartway-test/actions/workflows/ci.yaml)
 
 Web-сервис для работы с хранилищем данных перелётов
 
