@@ -34,7 +34,7 @@ func DeletePassengerHandler(ctx context.Context, flightService service.FlightSer
 		passengerId := chi.URLParam(r, "passengerId")
 		err := flightService.DeletePassengerById(ctx, passengerId)
 		if err != nil {
-			log.Error("Error delete ticket with id: ", passengerId, err)
+			log.Error("Error delete passenger with id: ", passengerId, err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}

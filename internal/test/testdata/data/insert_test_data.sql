@@ -3,7 +3,8 @@ VALUES('Matukov', 'Gigorish', 'Valerich'),
       ('Ostapov', 'Bender', 'Sishish'),
       ('Hulkenberg', 'Lubava', 'Gergova'),
       ('Mirka', 'Vassya', 'Tarasovna'),
-      ('Trapov', 'Felix', 'Ignatievic');
+      ('Trapov', 'Felix', 'Ignatievic'),
+      ('Esrapov', 'Delix', 'Pepernikov');
 
 INSERT INTO document(passenger_id, document_type, document_number)
 VALUES(1,'passport', '34 25 876527'),

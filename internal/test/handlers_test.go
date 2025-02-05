@@ -26,12 +26,15 @@ import (
 )
 
 const (
-	ticketNumber = "124237694"
-	ticketId     = "1"
-	passengerID  = "1"
-	documentId   = "1"
-	startDate    = "2020-11-20"
-	endDate      = "2030-12-26"
+	ticketNumber  = "124237694"
+	ticketId      = "1"
+	passengerID   = "1"
+	documentId    = "1"
+	startDate     = "2020-11-20"
+	endDate       = "2030-12-26"
+	delPassId     = "6"
+	delDocumentId = "6"
+	delTicketId   = "4"
 )
 
 type HandlersTestSuite struct {
@@ -304,7 +307,7 @@ func (suite *HandlersTestSuite) TestUpdateDocumentInfoHandler() {
 }
 
 func (suite *HandlersTestSuite) TestDeleteTicketHandler() {
-	req, _ := http.NewRequest(http.MethodDelete, "http://127.0.0.1:8081/api/ticket/"+ticketId, nil)
+	req, _ := http.NewRequest(http.MethodDelete, "http://127.0.0.1:8081/api/ticket/"+delTicketId, nil)
 	client := &http.Client{}
 	resp, err := client.Do(req)
 
@@ -317,17 +320,15 @@ func (suite *HandlersTestSuite) TestDeleteTicketHandler() {
 	err = json.NewDecoder(resp.Body).Decode(&responseMessage)
 	assert.NoError(suite.T(), err)
 
-	assert.Equal(suite.T(), fmt.Sprintf("ticket with id %s deleted", ticketId), responseMessage)
+	assert.Equal(suite.T(), fmt.Sprintf("ticket with id %s deleted", delTicketId), responseMessage)
 
 	var ticket models.Ticket
-	err = suite.db.Get(&ticket, "SELECT * FROM flight_ticket WHERE id = $1", ticketId)
+	err = suite.db.Get(&ticket, "SELECT * FROM flight_ticket WHERE id = $1", delTicketId)
 	assert.Error(suite.T(), err)
 }
 
 func (suite *HandlersTestSuite) TestDeletePassengerHandler() {
-	passId := "2"
-
-	req, _ := http.NewRequest(http.MethodDelete, "http://127.0.0.1:8081/api/passenger/"+passId, nil)
+	req, _ := http.NewRequest(http.MethodDelete, "http://127.0.0.1:8081/api/passenger/"+delPassId, nil)
 	client := &http.Client{}
 	resp, err := client.Do(req)
 
@@ -340,11 +341,31 @@ func (suite *HandlersTestSuite) TestDeletePassengerHandler() {
 	err = json.NewDecoder(resp.Body).Decode(&responseMessage)
 	assert.NoError(suite.T(), err)
 
-	assert.Equal(suite.T(), fmt.Sprintf("passenger with id %s deleted", passId), responseMessage)
-
 	var passenger models.Passenger
-	err = suite.db.Get(&passenger, "SELECT * FROM passenger WHERE id = $1", passId)
+	err = suite.db.Get(&passenger, "SELECT * FROM passenger WHERE id = $1", delPassId)
 	assert.Error(suite.T(), err)
+
+}
+
+func (suite *HandlersTestSuite) TestDeleteDocumentHandler() {
+	req, _ := http.NewRequest(http.MethodDelete, "http://127.0.0.1:8081/api/document/"+delDocumentId, nil)
+	client := &http.Client{}
+	resp, err := client.Do(req)
+
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), http.StatusOK, resp.StatusCode)
+
+	defer resp.Body.Close()
+
+	var responseMessage string
+	err = json.NewDecoder(resp.Body).Decode(&responseMessage)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), fmt.Sprintf("document with id %s deleted", delDocumentId), responseMessage)
+
+	var document models.Document
+	err = suite.db.Get(&document, "SELECT * FROM document WHERE id = $1", delDocumentId)
+	assert.Error(suite.T(), err)
+
 }
 
 // Запуск тестов
