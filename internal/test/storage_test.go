@@ -98,6 +98,32 @@ func (suite *StorageRepoTestSuite) TestStorageRepo_GetTicket() {
 	assert.Equal(t, "Sever", updatedTicket.DestinationPoint)
 }
 
+func (suite *StorageRepoTestSuite) TestStorageRepo_GetPassengersByTicketNumber() {
+	t := suite.T()
+
+	ticketNumber := "124237694"
+
+	passengers, err := suite.repository.GetPassengersByTicketNumber(suite.ctx, ticketNumber)
+	assert.NoError(t, err)
+	assert.NotNil(t, passengers)
+	assert.Equal(t, "Valerich", passengers[0].FirstName)
+	assert.Equal(t, "Matukov", passengers[0].LastName)
+}
+
+func (suite *StorageRepoTestSuite) TestStorageRepo_GetDocumentsByPassengerId() {
+	t := suite.T()
+
+	passengerID := "1"
+
+	// Вызываем тестируемый метод
+	documents, err := suite.repository.GetDocumentsByPassengerId(suite.ctx, passengerID)
+	assert.NoError(t, err)
+	assert.NotNil(t, documents)
+	assert.Len(t, documents, 3)
+	assert.Equal(t, "passport", documents[0].DocumentType)
+	assert.Equal(t, "34 25 876527", documents[0].DocumentNumber)
+}
+
 func TestStorageRepoTestSuite(t *testing.T) {
 	suite.Run(t, new(StorageRepoTestSuite))
 }
